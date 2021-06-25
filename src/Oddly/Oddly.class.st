@@ -10,7 +10,7 @@ Class {
 
 { #category : #'initialize-release' }
 Oddly >> close [
-	ui close
+	urbit close
 ]
 
 { #category : #initialization }
