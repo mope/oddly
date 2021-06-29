@@ -5,17 +5,17 @@ Class {
 		'ui',
 		'client',
 		'uuid',
-		'closed',
 		'url',
 		'password',
-		'ship'
+		'ship',
+		'sseclient'
 	],
 	#category : #Oddly
 }
 
 { #category : #'initialize-release' }
 Urbit >> close [
-	closed := true
+	sseclient close
 ]
 
 { #category : #ssl }
@@ -27,10 +27,11 @@ Urbit >> connect [
 
 { #category : #initialization }
 Urbit >> initialize [
-	client := ZnClient new timeout: 30.
 	url := 'http://localhost:8080/~/'.
 	password := 'lidlut-tabwed-pillex-ridrup'.
-	ship := 'zod'
+	ship := 'zod'.
+	client := ZnClient new timeout: 30.
+	sseclient := SSEClient new client: client.
 ]
 
 { #category : #'as yet unclassified' }
@@ -43,21 +44,24 @@ Urbit >> logIn [
 
 { #category : #'as yet unclassified' }
 Urbit >> openChannel [
-	| chunk response |
-	
-	closed := false.
-	response := client
- 	  logToTranscript;
+	"closed := false.
+	chunkSize := 1024.
+	response := client logToTranscript;
 		url: url, 'channel/', uuid;
 		streaming: true;
 		get.
 
+	chunk := response next: chunkSize.
+	
 	[
-		[ closed ] whileFalse: [	
-			chunk := response next: 1024.
-			ui setText: (chunk utf8Decoded)
+		(chunk isNotEmpty) whileTrue: [	
+			ui setText: (chunk utf8Decoded).
+			chunk := response next: chunkSize.
 		]
-	] fork
+	] fork"
+	sseclient url: url, uuid;
+		connect;
+		read.
 ]
 
 { #category : #'as yet unclassified' }
