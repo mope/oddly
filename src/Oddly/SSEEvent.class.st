@@ -15,10 +15,9 @@ SSEEvent class >> parse: raw [
 	| message lines re name_ value |
 	re := '([^:]*)(\:? ?)(.*)' asRegex.
 	message := self new.
-	lines := raw splitOn: '\n'.
-	lines do: [ 
+	raw linesDo: [
 		:line |
-		(re matchesPrefix: line) ifTrue: [ 
+		(re matches: line) ifTrue: [ 
 				name_ := re subexpression: 2.
 				" If name is empty then the line started with a : so ignore it "
 				name_ ifNotEmpty: [ 
