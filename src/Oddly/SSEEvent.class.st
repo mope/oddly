@@ -13,7 +13,7 @@ Class {
 { #category : #parsing }
 SSEEvent class >> parse: raw [
 	| message lines re name_ value |
-	re := '([^:]*):?( ?(.*))?' asRegex.
+	re := '([^:]*)(\:? ?)(.*)' asRegex.
 	message := self new.
 	lines := raw splitOn: '\n'.
 	lines do: [ 
@@ -22,7 +22,7 @@ SSEEvent class >> parse: raw [
 				name_ := re subexpression: 2.
 				" If name is empty then the line started with a : so ignore it "
 				name_ ifNotEmpty: [ 
-					value := re subexpression: 3.
+					value := re subexpression: 4.
 					" this probably needs to be a separate method with ifTrue return "
 					name_ = 'data' ifTrue: [ message data: value ].
 					name_ = 'event' ifTrue: [ message event: value ].
@@ -33,6 +33,11 @@ SSEEvent class >> parse: raw [
 		]
    ].
 	^ message
+]
+
+{ #category : #accessing }
+SSEEvent >> data [
+	^ data
 ]
 
 { #category : #accessing }
@@ -59,6 +64,14 @@ SSEEvent >> id [
 { #category : #accessing }
 SSEEvent >> id: i [
 	id := i
+]
+
+{ #category : #initialization }
+SSEEvent >> initialize [
+	data := ''.
+	event := ''.
+	id := ''.
+	retry := ''
 ]
 
 { #category : #printing }

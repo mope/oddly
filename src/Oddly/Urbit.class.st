@@ -8,14 +8,15 @@ Class {
 		'url',
 		'password',
 		'ship',
-		'sseclient'
+		'sseclient',
+		'closed'
 	],
 	#category : #Oddly
 }
 
 { #category : #'initialize-release' }
 Urbit >> close [
-	sseclient close
+	closed := true
 ]
 
 { #category : #ssl }
@@ -32,6 +33,7 @@ Urbit >> initialize [
 	ship := 'zod'.
 	client := ZnClient new timeout: 30.
 	sseclient := SSEClient new client: client.
+	closed := false
 ]
 
 { #category : #'as yet unclassified' }
@@ -59,9 +61,14 @@ Urbit >> openChannel [
 			chunk := response next: chunkSize.
 		]
 	] fork"
-	sseclient url: url, uuid;
-		connect;
-		read.
+	| message |
+
+	sseclient url: url, 'channel/', uuid; connect.
+	[ true ] whileTrue: [ 
+		closed ifTrue: [ ^ self ].
+		message := sseclient read.
+		ui setText: (message data).
+	]
 ]
 
 { #category : #'as yet unclassified' }
