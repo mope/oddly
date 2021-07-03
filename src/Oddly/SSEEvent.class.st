@@ -12,7 +12,7 @@ Class {
 
 { #category : #parsing }
 SSEEvent class >> parse: raw [
-	| message lines re name_ value |
+	| message re name_ value |
 	re := '([^:]*)(\:? ?)(.*)' asRegex.
 	message := self new.
 	raw linesDo: [

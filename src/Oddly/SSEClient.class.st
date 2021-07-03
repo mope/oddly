@@ -19,13 +19,13 @@ SSEClient >> accumulateChunks [
 	| re chunk split |
 	re := '(.*)(\r\n\r\n|\r\r|\n\n)(.*)' asRegex.
 	
-	[ true ] whileTrue: [		
+	[ connection atEnd ] whileFalse: [		
 		chunk := connection next: chunkSize.
 		chunk 
 			ifNil: [
 				" we ran out of chunks before the end, so we reconnect and try again "
 				(retry / 1000.0) seconds asDelay wait.
-				self connect.
+				client get.
 				" we can only resume on a whole message, so discard contents after newline "
 				split := buffer splitOn: '\n'.
 				buffer := chunk at: 1, '\n'.
@@ -34,8 +34,12 @@ SSEClient >> accumulateChunks [
 				" if we have a chunk, append it to the buffer "
 				buffer := buffer, chunk.
 			].
-			(re matches: buffer) ifTrue: [	^ re ].
-	]
+			(re matches: buffer) ifTrue: [	
+				buffer := re subexpression: 4.
+				^ re subexpression: 2
+			].
+	].
+	^ ''
 ]
 
 { #category : #accessing }
@@ -83,7 +87,7 @@ SSEClient >> lastId: l [
 
 { #category : #accessing }
 SSEClient >> read [
-	| re message |
+	| raw message |
 	
 	" We need to accumulate the chunks into a buffer then parse the buffer "
 	" the end_of_field regex tells us when we've reached the end. If we "
@@ -92,9 +96,8 @@ SSEClient >> read [
 	" for json parsing "
 	" if end_of_field_regex matches, split the string on end_of_field, otherwise accumulate in buffer"
 	" end_of_field could be divided across chunks so we need search for it in the buffer "
-	re := self accumulateChunks.
-	message := SSEEvent parse: (re subexpression: 2).
-	buffer := re subexpression: 4.
+	raw := self accumulateChunks.
+	message := SSEEvent parse: (raw).
 	message retry isNotNil ifTrue: [ self retry: (message retry) ].
 	message id isNotNil ifTrue: [ self lastId: (message id) ].
 	^ message

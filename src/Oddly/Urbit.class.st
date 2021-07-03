@@ -1,6 +1,6 @@
 Class {
 	#name : #Urbit,
-	#superclass : #Object,
+	#superclass : #TKTService,
 	#instVars : [
 		'ui',
 		'client',
@@ -28,6 +28,7 @@ Urbit >> connect [
 
 { #category : #initialization }
 Urbit >> initialize [
+	super initialize.
 	url := 'http://localhost:8080/~/'.
 	password := 'lidlut-tabwed-pillex-ridrup'.
 	ship := 'zod'.
@@ -42,6 +43,11 @@ Urbit >> logIn [
 	url: url, 'login';
 	formAt: 'password' put: password;
 	post.
+]
+
+{ #category : #accessing }
+Urbit >> name [
+	^ 'Urbit ship ', ship
 ]
 
 { #category : #'as yet unclassified' }
@@ -61,14 +67,20 @@ Urbit >> openChannel [
 			chunk := response next: chunkSize.
 		]
 	] fork"
-	| message |
-
 	sseclient url: url, 'channel/', uuid; connect.
-	[ true ] whileTrue: [ 
-		closed ifTrue: [ ^ self ].
-		message := sseclient read.
-		ui setText: (message data).
-	]
+]
+
+{ #category : #'meta-object-protocol' }
+Urbit >> read [
+	| message |
+	message := sseclient read.
+	ui setText: (message data).
+]
+
+{ #category : #stepping }
+Urbit >> stepService [
+	1 second wait.
+	self read
 ]
 
 { #category : #'as yet unclassified' }
