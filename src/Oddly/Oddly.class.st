@@ -10,7 +10,6 @@ Class {
 
 { #category : #'initialize-release' }
 Oddly >> close [
-	urbit stop.
 	urbit close.
 ]
 
@@ -21,5 +20,4 @@ Oddly >> initialize [
 	urbit ui: ui.
 	ui openWithSpec.
 	urbit connect.
-	urbit start.
 ]

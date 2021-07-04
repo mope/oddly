@@ -1,6 +1,6 @@
 Class {
 	#name : #Urbit,
-	#superclass : #TKTService,
+	#superclass : #Object,
 	#instVars : [
 		'ui',
 		'client',
@@ -16,7 +16,8 @@ Class {
 
 { #category : #'initialize-release' }
 Urbit >> close [
-	closed := true
+	closed := true.
+	client close
 ]
 
 { #category : #ssl }
@@ -45,42 +46,20 @@ Urbit >> logIn [
 	post.
 ]
 
-{ #category : #accessing }
-Urbit >> name [
-	^ 'Urbit ship ', ship
-]
-
 { #category : #'as yet unclassified' }
 Urbit >> openChannel [
-	"closed := false.
-	chunkSize := 1024.
-	response := client logToTranscript;
-		url: url, 'channel/', uuid;
-		streaming: true;
-		get.
-
-	chunk := response next: chunkSize.
-	
-	[
-		(chunk isNotEmpty) whileTrue: [	
-			ui setText: (chunk utf8Decoded).
-			chunk := response next: chunkSize.
-		]
-	] fork"
 	sseclient url: url, 'channel/', uuid; connect.
+	[ [ closed ] whileFalse: [ 
+		self read.
+		Processor yield.  
+	] ] forkAt: Processor userBackgroundPriority
 ]
 
 { #category : #'meta-object-protocol' }
 Urbit >> read [
 	| message |
 	message := sseclient read.
-	ui setText: (message data).
-]
-
-{ #category : #stepping }
-Urbit >> stepService [
-	1 second wait.
-	self read
+	ui appendText: (message data).
 ]
 
 { #category : #'as yet unclassified' }

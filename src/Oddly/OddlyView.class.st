@@ -2,7 +2,8 @@ Class {
 	#name : #OddlyView,
 	#superclass : #SpPresenter,
 	#instVars : [
-		'textPresenter'
+		'textPresenter',
+		'buffer'
 	],
 	#category : #Oddly
 }
@@ -14,8 +15,15 @@ OddlyView class >> defaultSpec [
 		yourself
 ]
 
+{ #category : #'accessing - text' }
+OddlyView >> appendText: text [
+	buffer := buffer, String cr, text.
+	self setText: buffer.
+]
+
 { #category : #initialization }
 OddlyView >> initializePresenters [
+	buffer := ''.
 	textPresenter := self newText.
 	
 	textPresenter text: '';

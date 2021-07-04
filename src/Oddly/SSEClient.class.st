@@ -8,18 +8,16 @@ Class {
 		'client',
 		'chunkSize',
 		'buffer',
-		'connection',
-		'close'
+		'connection'
 	],
 	#category : #Oddly
 }
 
 { #category : #'as yet unclassified' }
 SSEClient >> accumulateChunks [
-	| re chunk split |
-	re := '(.*)(\r\n\r\n|\r\r|\n\n)(.*)' asRegex.
-	
-	[ connection atEnd ] whileFalse: [		
+	| chunk split delimiterPosition txt |
+
+	[ connection atEnd ] whileFalse: [	
 		chunk := connection next: chunkSize.
 		chunk 
 			ifNil: [
@@ -28,16 +26,19 @@ SSEClient >> accumulateChunks [
 				client get.
 				" we can only resume on a whole message, so discard contents after newline "
 				split := buffer splitOn: '\n'.
-				buffer := chunk at: 1, '\n'.
+				buffer := split at: 1, '\n'.
 			]
 			ifNotNil: [
 				" if we have a chunk, append it to the buffer "
 				buffer := buffer, chunk.
 			].
-			(re matches: buffer) ifTrue: [	
-				buffer := re subexpression: 4.
-				^ re subexpression: 2
-			].
+		   " The server could return combinations of lfs and crs, so this is not quite correct "
+			delimiterPosition := buffer findString: String lf, String lf.
+			(delimiterPosition ~= 0) ifTrue: [ 
+      			txt := buffer copyFrom: 1 to: (delimiterPosition - 1).
+				buffer := buffer allButFirst: (delimiterPosition + 1).
+				^ txt.
+			]
 	].
 	^ ''
 ]
@@ -48,16 +49,6 @@ SSEClient >> client: c [
 	client
 		headerAt: 'Cache-Control' put: 'no-cache';
 		headerAt: 'Accept' put: 'text/event-stream'.
-]
-
-{ #category : #accessing }
-SSEClient >> close [
-	close := true
-]
-
-{ #category : #accessing }
-SSEClient >> close: boolean [
-	close := boolean
 ]
 
 { #category : #ssl }
@@ -76,7 +67,6 @@ SSEClient >> initialize [
 	retry := 3000.
 	chunkSize := 1024.
 	buffer := ''.
-	close := false.
 
 ]
 
@@ -94,8 +84,6 @@ SSEClient >> read [
 	" run out of text before then then we need to start over. "
 	" We need to accumulate an array of Events somewhere, then hand them over "
 	" for json parsing "
-	" if end_of_field_regex matches, split the string on end_of_field, otherwise accumulate in buffer"
-	" end_of_field could be divided across chunks so we need search for it in the buffer "
 	raw := self accumulateChunks.
 	message := SSEEvent parse: (raw).
 	message retry isNotNil ifTrue: [ self retry: (message retry) ].
