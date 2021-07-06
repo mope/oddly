@@ -25,8 +25,8 @@ SSEClient >> accumulateChunks [
 				(retry / 1000.0) seconds asDelay wait.
 				client get.
 				" we can only resume on a whole message, so discard contents after newline "
-				split := buffer splitOn: '\n'.
-				buffer := split at: 1, '\n'.
+				split := buffer splitOn: String lf.
+				buffer := split at: 1, String lf.
 			]
 			ifNotNil: [
 				" if we have a chunk, append it to the buffer "

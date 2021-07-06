@@ -9,10 +9,37 @@ Class {
 		'password',
 		'ship',
 		'sseclient',
-		'closed'
+		'closed',
+		'actionId'
 	],
 	#category : #Oddly
 }
+
+{ #category : #'as yet unclassified' }
+Urbit >> ack: eventId [
+	| ackClient message messageArray |
+	
+	ackClient := ZnClient new.
+	message := Dictionary new
+		at: 'id' put: (self actionId);
+		at: 'action' put: 'ack';
+		at: 'event-id' put: eventId.
+	messageArray := Array new: 1.
+	messageArray at: 1 put: message.
+		
+	ackClient logToTranscript;
+		url: url, 'channel/', uuid;
+		entity: (ZnEntity
+			with: (STONJSON toString: messageArray)
+			type: ZnMimeType applicationJson);
+		put.
+]
+
+{ #category : #accessing }
+Urbit >> actionId [
+	actionId := actionId + 1.
+	^ actionId
+]
 
 { #category : #'initialize-release' }
 Urbit >> close [
@@ -21,7 +48,7 @@ Urbit >> close [
 ]
 
 { #category : #ssl }
-Urbit >> connect [	
+Urbit >> connect [
 	self logIn.
 	self subscribe.
 	self openChannel
@@ -35,7 +62,8 @@ Urbit >> initialize [
 	ship := 'zod'.
 	client := ZnClient new timeout: 30.
 	sseclient := SSEClient new client: client.
-	closed := false
+	closed := false.
+	actionId := 0.
 ]
 
 { #category : #'as yet unclassified' }
@@ -49,41 +77,52 @@ Urbit >> logIn [
 { #category : #'as yet unclassified' }
 Urbit >> openChannel [
 	sseclient url: url, 'channel/', uuid; connect.
-	[ [ closed ] whileFalse: [ 
+	[ [ closed ] whileFalse: [
 		self read.
 		Processor yield.  
 	] ] forkAt: Processor userBackgroundPriority
+]
+
+{ #category : #'as yet unclassified' }
+Urbit >> poke: ship_ app: app path: path action: action [
+	| message messageArray |
+	
+	message := Dictionary new
+		at: 'id' put: (self actionId);
+		at: 'action' put: action;
+		at: 'ship' put: ship_;
+		at: 'app' put: app;
+		at: 'path' put: path;
+		yourself.
+	messageArray := Array new: 1.
+	messageArray at: 1 put: message.
+
+	client logToTranscript;
+		url: url, 'channel/', uuid;
+		entity: (ZnEntity
+			with: (STONJSON toString: messageArray)
+			type: ZnMimeType applicationJson);
+		put.
 ]
 
 { #category : #'meta-object-protocol' }
 Urbit >> read [
 	| message |
 	message := sseclient read.
-	ui appendText: (message data).
+	self ack: message id.
+	" ui appendText: (STONJSON fromString: message data) asString. "
+	ui appendText: message data.
 ]
 
 { #category : #'as yet unclassified' }
 Urbit >> subscribe [
-	| message messageJson messageArray |
-	
 	uuid := UUID new asString.
-	message := Dictionary new
-			at: 'id' put: 1;
-			at: 'action' put: 'subscribe';
-			at: 'ship' put: ship;
-			at: 'app' put: 'graph-store';
-			at: 'path' put: '/updates';
-			yourself.
-	messageArray := Array new: 1.
-	messageArray at: 1 put: message.
-	messageJson := STONJSON toString: messageArray.
-	
-	client logToTranscript;
-		url: url, 'channel/', uuid;
-		entity: (ZnEntity 
-  	 		with: messageJson
-			type: ZnMimeType applicationJson);
-		put.
+	self
+		poke: ship
+		app: 'graph-store'
+		path: '/updates'
+		action: 'subscribe'.
+
 ]
 
 { #category : #accessing }
