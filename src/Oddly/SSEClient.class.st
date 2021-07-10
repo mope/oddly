@@ -63,7 +63,7 @@ SSEClient >> connect [
 { #category : #initialization }
 SSEClient >> initialize [
 	retry := 3000.
-	chunkSize := 1024.
+	chunkSize := 512.
 	buffer := ''.
 
 
