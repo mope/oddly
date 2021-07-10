@@ -2,6 +2,7 @@ Class {
 	#name : #SSEClient,
 	#superclass : #Object,
 	#instVars : [
+		'process',
 		'url',
 		'lastId',
 		'retry',
@@ -15,32 +16,24 @@ Class {
 
 { #category : #'as yet unclassified' }
 SSEClient >> accumulateChunks [
-	| chunk split delimiterPosition txt |
+	| chunk split |
 
-	[ connection atEnd ] whileFalse: [	
-		chunk := connection next: chunkSize.
-		chunk 
-			ifNil: [
-				" we ran out of chunks before the end, so we reconnect and try again "
-				(retry / 1000.0) seconds asDelay wait.
-				client get.
-				" we can only resume on a whole message, so discard contents after newline "
-				split := buffer splitOn: String lf.
-				buffer := split at: 1, String lf.
-			]
-			ifNotNil: [
-				" if we have a chunk, append it to the buffer "
-				buffer := buffer, chunk.
-			].
-		   " The server could return combinations of lfs and crs, so this is not quite correct "
-			delimiterPosition := buffer findString: String lf, String lf.
-			(delimiterPosition ~= 0) ifTrue: [ 
-      			txt := buffer copyFrom: 1 to: (delimiterPosition - 1).
-				buffer := buffer allButFirst: (delimiterPosition + 1).
-				^ txt.
-			]
-	].
-	^ ''
+	chunk := connection next: chunkSize.
+	chunk 
+		ifNil: [
+			" we ran out of chunks before the end, so we reconnect and try again "
+			(retry / 1000.0) seconds asDelay wait.
+			client get.
+			" we can only resume on a whole message, so discard contents after newline "
+			split := buffer splitOn: String lf.
+			buffer := split at: 1, String lf.
+		]
+		ifNotNil: [
+			" if we have a chunk, append it to the buffer "
+			buffer := buffer, chunk.
+		].
+
+
 ]
 
 { #category : #accessing }
@@ -49,6 +42,11 @@ SSEClient >> client: c [
 	client
 		headerAt: 'Cache-Control' put: 'no-cache';
 		headerAt: 'Accept' put: 'text/event-stream'.
+]
+
+{ #category : #'initialize-release' }
+SSEClient >> close [
+	process terminate
 ]
 
 { #category : #ssl }
@@ -68,6 +66,7 @@ SSEClient >> initialize [
 	chunkSize := 1024.
 	buffer := ''.
 
+
 ]
 
 { #category : #accessing }
@@ -76,19 +75,23 @@ SSEClient >> lastId: l [
 ]
 
 { #category : #accessing }
-SSEClient >> read [
-	| raw message |
+SSEClient >> read: ui [
+	| delimiterPosition raw messages |
 	
-	" We need to accumulate the chunks into a buffer then parse the buffer "
-	" the end_of_field regex tells us when we've reached the end. If we "
-	" run out of text before then then we need to start over. "
-	" We need to accumulate an array of Events somewhere, then hand them over "
-	" for json parsing "
-	raw := self accumulateChunks.
-	message := SSEEvent parse: (raw).
-	message retry isNotNil ifTrue: [ self retry: (message retry) ].
-	message id isNotNil ifTrue: [ self lastId: (message id) ].
-	^ message
+	" FIXME this crashes if you close it before it's accumulated anything. "
+	process := [ [ true ] whileTrue: [
+		self accumulateChunks.
+		" The server could return combinations of lfs and crs, so this is not quite correct "
+		delimiterPosition := buffer findString: String lf, String lf.
+		(delimiterPosition ~= 0) ifTrue: [
+			raw := buffer splitOn: String lf, String lf.
+			buffer := raw last.
+			messages := raw allButLast collect: [ :line | SSEEvent parse: line ].
+			messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
+			messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
+			messages do: [ :message | ui appendText: message data. ].
+		].
+	] ] forkAt: Processor userBackgroundPriority.
 ]
 
 { #category : #accessing }

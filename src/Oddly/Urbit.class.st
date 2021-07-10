@@ -23,7 +23,7 @@ Urbit >> ack: eventId [
 	message := Dictionary new
 		at: 'id' put: (self actionId);
 		at: 'action' put: 'ack';
-		at: 'event-id' put: eventId.
+		at: 'event-id' put: eventId asNumber.
 	messageArray := Array new: 1.
 	messageArray at: 1 put: message.
 		
@@ -44,6 +44,8 @@ Urbit >> actionId [
 { #category : #'initialize-release' }
 Urbit >> close [
 	closed := true.
+	self deleteChannel.
+	sseclient close.
 	client close
 ]
 
@@ -52,6 +54,25 @@ Urbit >> connect [
 	self logIn.
 	self subscribe.
 	self openChannel
+]
+
+{ #category : #'as yet unclassified' }
+Urbit >> deleteChannel [
+	| message messageArray |
+	
+	message := Dictionary new
+		at: 'id' put: (self actionId);
+		at: 'action' put: 'delete';
+		yourself.
+	messageArray := Array new: 1.
+	messageArray at: 1 put: message.
+
+	client logToTranscript;
+		url: url, 'channel/', uuid;
+		entity: (ZnEntity
+			with: (STONJSON toString: messageArray)
+			type: ZnMimeType applicationJson);
+		put.
 ]
 
 { #category : #initialization }
@@ -77,10 +98,9 @@ Urbit >> logIn [
 { #category : #'as yet unclassified' }
 Urbit >> openChannel [
 	sseclient url: url, 'channel/', uuid; connect.
-	[ [ closed ] whileFalse: [
-		self read.
-		Processor yield.  
-	] ] forkAt: Processor userBackgroundPriority
+	self read.
+
+
 ]
 
 { #category : #'as yet unclassified' }
@@ -107,11 +127,16 @@ Urbit >> poke: ship_ app: app path: path action: action [
 
 { #category : #'meta-object-protocol' }
 Urbit >> read [
-	| message |
-	message := sseclient read.
-	self ack: message id.
+   " FIXME seem to be getting 403 missing on ack "
+	sseclient read: ui.
+	"self ack: message id."
+	" This doesn't seem to be working "
+	" Compare to implementations here: "
+	" https://github.com/urbit/urbit/blob/6ed5ccbc4ee833a823163bea1a9db1ae2944f0a3/pkg/arvo/app/landscape/js/channel.js "
+	" https://github.com/clonex10100/urbit-api.el/blob/master/urbit-http.el "
+	" Am I missing some of the message numbers? Maybe I need to accumulate then send them "
 	" ui appendText: (STONJSON fromString: message data) asString. "
-	ui appendText: message data.
+	
 ]
 
 { #category : #'as yet unclassified' }
