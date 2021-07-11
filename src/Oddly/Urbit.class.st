@@ -2,7 +2,6 @@ Class {
 	#name : #Urbit,
 	#superclass : #Object,
 	#instVars : [
-		'ui',
 		'client',
 		'uuid',
 		'url',
@@ -41,6 +40,11 @@ Urbit >> actionId [
 	^ actionId
 ]
 
+{ #category : #accessing }
+Urbit >> client: c [
+	client := c
+]
+
 { #category : #'initialize-release' }
 Urbit >> close [
 	closed := true.
@@ -51,8 +55,18 @@ Urbit >> close [
 
 { #category : #ssl }
 Urbit >> connect [
+	uuid := UUID new asString.
 	self logIn.
-	self subscribe.
+	self
+		poke: ship
+		app: 'graph-store'
+		path: '/updates'
+		action: 'subscribe'.
+	self
+		poke: ship
+		app: 'metadata-store'
+		path: '/all'
+		action: 'subscribe'.
 	self openChannel
 ]
 
@@ -81,8 +95,6 @@ Urbit >> initialize [
 	url := 'http://localhost:8080/~/'.
 	password := 'lidlut-tabwed-pillex-ridrup'.
 	ship := 'zod'.
-	client := ZnClient new timeout: 30.
-	sseclient := SSEClient new client: client.
 	closed := false.
 	actionId := 0.
 ]
@@ -128,7 +140,7 @@ Urbit >> poke: ship_ app: app path: path action: action [
 { #category : #'meta-object-protocol' }
 Urbit >> read [
    " FIXME seem to be getting 403 missing on ack "
-	sseclient read: ui.
+	sseclient read.
 	"self ack: message id."
 	" This doesn't seem to be working "
 	" Compare to implementations here: "
@@ -139,18 +151,7 @@ Urbit >> read [
 	
 ]
 
-{ #category : #'as yet unclassified' }
-Urbit >> subscribe [
-	uuid := UUID new asString.
-	self
-		poke: ship
-		app: 'graph-store'
-		path: '/updates'
-		action: 'subscribe'.
-
-]
-
 { #category : #accessing }
-Urbit >> ui: instance [
-	ui := instance
+Urbit >> sseclient: s [
+	sseclient := s
 ]

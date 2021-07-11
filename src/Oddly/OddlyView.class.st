@@ -3,7 +3,9 @@ Class {
 	#superclass : #SpPresenter,
 	#instVars : [
 		'textPresenter',
-		'buffer'
+		'buffer',
+		'graphStore',
+		'metadataStore'
 	],
 	#category : #Oddly
 }
@@ -21,6 +23,11 @@ OddlyView >> appendText: text [
 	self setText: buffer.
 ]
 
+{ #category : #accessing }
+OddlyView >> graphStore: g [
+	graphStore := g
+]
+
 { #category : #initialization }
 OddlyView >> initializePresenters [
 	buffer := ''.
@@ -31,6 +38,20 @@ OddlyView >> initializePresenters [
 ]
 
 { #category : #accessing }
+OddlyView >> metadataStore: m [
+	metadataStore := m
+]
+
+{ #category : #accessing }
 OddlyView >> setText: value [
 	textPresenter text: value
+]
+
+{ #category : #subscription }
+OddlyView >> subscribeTo: anAnnouncer [
+    anAnnouncer when: GraphUpdate
+    do: [ self setText: graphStore asString ].
+    anAnnouncer when: MetadataUpdate
+    do: [ self setText: metadataStore asString ].
+	
 ]

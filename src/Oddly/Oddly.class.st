@@ -3,7 +3,12 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'ui',
-		'urbit'
+		'urbit',
+		'client',
+		'sseclient',
+		'messageHandler',
+		'metadataStore',
+		'graphStore'
 	],
 	#category : #Oddly
 }
@@ -15,9 +20,23 @@ Oddly >> close [
 
 { #category : #initialization }
 Oddly >> initialize [
-	ui := OddlyView new.
-	urbit := Urbit new.
-	urbit ui: ui.
-	ui openWithSpec.
-	urbit connect.
+	metadataStore := MetadataStore new.
+	graphStore := GraphStore new.
+	messageHandler := MessageHandler new
+		metadataStore: metadataStore;
+		graphStore: graphStore.
+	client := ZnClient new timeout: 30.
+	sseclient := SSEClient new 
+		client: client;
+		messageHandler: messageHandler.
+	ui := OddlyView new
+		metadataStore: metadataStore;
+		graphStore: graphStore;
+	   subscribeTo: metadataStore announcer;
+		subscribeTo: graphStore announcer;
+		openWithSpec.
+	urbit := Urbit new
+		client: client;
+		sseclient: sseclient;
+		connect.
 ]

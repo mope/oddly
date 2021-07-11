@@ -9,7 +9,8 @@ Class {
 		'client',
 		'chunkSize',
 		'buffer',
-		'connection'
+		'connection',
+		'messageHandler'
 	],
 	#category : #Oddly
 }
@@ -65,8 +66,6 @@ SSEClient >> initialize [
 	retry := 3000.
 	chunkSize := 512.
 	buffer := ''.
-
-
 ]
 
 { #category : #accessing }
@@ -75,7 +74,12 @@ SSEClient >> lastId: l [
 ]
 
 { #category : #accessing }
-SSEClient >> read: ui [
+SSEClient >> messageHandler: m [
+	messageHandler := m
+]
+
+{ #category : #accessing }
+SSEClient >> read [
 	| delimiterPosition raw messages |
 	
 	" FIXME this crashes if you close it before it's accumulated anything. "
@@ -89,7 +93,7 @@ SSEClient >> read: ui [
 			messages := raw allButLast collect: [ :line | SSEEvent parse: line ].
 			messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
 			messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
-			messages do: [ :message | ui appendText: message data. ].
+			messages do: [ :message | messageHandler add: message ].
 		].
 	] ] forkAt: Processor userBackgroundPriority.
 ]
