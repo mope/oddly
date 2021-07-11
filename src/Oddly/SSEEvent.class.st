@@ -1,6 +1,6 @@
 Class {
 	#name : #SSEEvent,
-	#superclass : #Announcement,
+	#superclass : #Object,
 	#instVars : [
 		'data',
 		'event',

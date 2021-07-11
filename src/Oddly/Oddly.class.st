@@ -8,7 +8,8 @@ Class {
 		'sseclient',
 		'messageHandler',
 		'metadataStore',
-		'graphStore'
+		'graphStore',
+		'metadataList'
 	],
 	#category : #Oddly
 }
@@ -29,10 +30,12 @@ Oddly >> initialize [
 	sseclient := SSEClient new 
 		client: client;
 		messageHandler: messageHandler.
-	ui := OddlyView new
+	metadataList := MetadataList new
 		metadataStore: metadataStore;
+		subscribeTo: metadataStore announcer;
+		openWithSpec.
+	ui := OddlyView new
 		graphStore: graphStore;
-	   subscribeTo: metadataStore announcer;
 		subscribeTo: graphStore announcer;
 		openWithSpec.
 	urbit := Urbit new

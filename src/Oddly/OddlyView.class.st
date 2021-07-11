@@ -51,7 +51,5 @@ OddlyView >> setText: value [
 OddlyView >> subscribeTo: anAnnouncer [
     anAnnouncer when: GraphUpdate
     do: [ self setText: graphStore asString ].
-    anAnnouncer when: MetadataUpdate
-    do: [ self setText: metadataStore asString ].
 	
 ]
