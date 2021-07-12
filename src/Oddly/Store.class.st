@@ -22,7 +22,6 @@ Store >> announcer [
 
 { #category : #converting }
 Store >> asString [
-	Transcript show: 'CALLED'.
 	^ messages asString
 ]
 

@@ -90,6 +90,7 @@ SSEClient >> read [
 		(delimiterPosition ~= 0) ifTrue: [
 			raw := buffer splitOn: String lf, String lf.
 			buffer := raw last.
+			raw := raw select: [ :line | line isNotEmpty ].
 			messages := raw allButLast collect: [ :line | SSEEvent parse: line ].
 			messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
 			messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].

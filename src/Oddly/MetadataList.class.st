@@ -3,7 +3,7 @@ Class {
 	#superclass : #SpPresenter,
 	#instVars : [
 		'groupList',
-		'graphList',
+		'chatList',
 		'metadataStore'
 	],
 	#category : #Oddly
@@ -14,15 +14,15 @@ MetadataList class >> defaultSpec [
 	^ SpBoxLayout newLeftToRight
 		add: #groupList;
 			yourself;
-		add: #graphList;
+		add: #chatList;
 			yourself;
 		yourself.
 			
 ]
 
 { #category : #accessing }
-MetadataList >> graphList [
-	^ graphList
+MetadataList >> chatList [
+	^ chatList
 ]
 
 { #category : #accessing }
@@ -33,7 +33,7 @@ MetadataList >> groupList [
 { #category : #initialization }
 MetadataList >> initializePresenters [
 	groupList := self newList.
-	graphList := self newList.
+	chatList := self newList.
 	
 ]
 
@@ -45,9 +45,15 @@ MetadataList >> metadataStore: m [
 { #category : #subscription }
 MetadataList >> subscribeTo: anAnnouncer [
     
-	anAnnouncer when: MetadataUpdate
-		do: [
-			groupList items: (metadataStore groups values collect: [ :group | (group at: 'metadata') at: 'title' ]).
-			graphList items: (metadataStore graph values collect: [ :group | (group at: 'metadata') at: 'title' ]).
-	 	]
+anAnnouncer when: MetadataUpdate
+	do: [
+		Transcript show: String cr, 'ANNOUNCEMENT RECEIVED', String cr.
+		Transcript show: metadataStore groups.
+		groupList items: (metadataStore groups values collect: [
+			 :group | group asString 
+			]).
+		chatList items: (metadataStore chats values collect: [
+			 :chat | chat asString 
+			]).
+ 		]
 ]
