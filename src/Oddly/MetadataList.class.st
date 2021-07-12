@@ -25,6 +25,15 @@ MetadataList >> chatList [
 	^ chatList
 ]
 
+{ #category : #initialization }
+MetadataList >> connectPresenters [
+	groupList whenSelectionModeChangedDo: [ :selection |
+		selection selectedItem ifNotNil: [ 
+			chatList items: selection selectedItem chats values.
+		].
+	]
+]
+
 { #category : #accessing }
 MetadataList >> groupList [
 	^ groupList
@@ -47,13 +56,6 @@ MetadataList >> subscribeTo: anAnnouncer [
     
 anAnnouncer when: MetadataUpdate
 	do: [
-		Transcript show: String cr, 'ANNOUNCEMENT RECEIVED', String cr.
-		Transcript show: metadataStore groups.
-		groupList items: (metadataStore groups values collect: [
-			 :group | group asString 
-			]).
-		chatList items: (metadataStore chats values collect: [
-			 :chat | chat asString 
-			]).
- 		]
+		groupList items: (metadataStore groups values).
+ 	]
 ]

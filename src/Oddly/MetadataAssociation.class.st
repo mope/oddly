@@ -5,7 +5,8 @@ Class {
 		'resource',
 		'group',
 		'title',
-		'creator'
+		'creator',
+		'store'
 	],
 	#category : #Oddly
 }
@@ -19,6 +20,19 @@ MetadataAssociation class >> with: dictionary [
 	association title: ((dictionary at: 'metadata') at: 'title').
 	association group: (dictionary at: 'group').
 	association resource: (dictionary at: 'resource').
+	^ association
+]
+
+{ #category : #'instance creation' }
+MetadataAssociation class >> with: dictionary store: store [
+	| association |
+	
+	association := self new.
+	association creator: ((dictionary at: 'metadata') at: 'creator').
+	association title: ((dictionary at: 'metadata') at: 'title').
+	association group: (dictionary at: 'group').
+	association resource: (dictionary at: 'resource').
+	association store: store.
 	^ association
 ]
 
@@ -61,6 +75,18 @@ MetadataAssociation >> resource [
 MetadataAssociation >> resource: anObject [
 
 	resource := anObject
+]
+
+{ #category : #accessing }
+MetadataAssociation >> store [
+
+	^ store
+]
+
+{ #category : #accessing }
+MetadataAssociation >> store: anObject [
+
+	store := anObject
 ]
 
 { #category : #accessing }

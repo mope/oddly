@@ -16,17 +16,17 @@ MetadataStore >> add: message [
 	
 	items := ((message at: 'json') at: 'metadata-update') at: 'associations'.
 	groupsDictionary := items associationsSelect: [ :association | (association value at: 'app-name') = 'groups' ].
-	groups := groupsDictionary collect: [ :value | Group with: value ].
+	groups := groupsDictionary collect: [ :value | Group with: value store: self ].
 	items associationsDo: [ :association | 
 		((association value at: 'app-name') = 'graph') ifTrue: [ 
 			((((association value at: 'metadata') at: 'config') at: 'graph') = 'chat') ifTrue: [ 
-				chats at: association key put: (Chat with: association value).
+				chats at: association key put: (Chat with: association value store: self).
 			].
 			((((association value at: 'metadata') at: 'config') at: 'graph') = 'publish') ifTrue: [ 
-				publishes at: association key put: (Publish with: association value).
+				publishes at: association key put: (Publish with: association value store: self).
 			].
 			((((association value at: 'metadata') at: 'config') at: 'graph') = 'link') ifTrue: [ 
-				links at: association key put: (Links with: association value).
+				links at: association key put: (Links with: association value store: self).
 			].
 		].
 	].
@@ -43,6 +43,21 @@ MetadataStore >> chats [
 MetadataStore >> chats: anObject [
 
 	chats := anObject
+]
+
+{ #category : #'as yet unclassified' }
+MetadataStore >> groupChats: group [
+	^ self chats select: [ :chat | chat group = group ]
+]
+
+{ #category : #'as yet unclassified' }
+MetadataStore >> groupLinks: group [
+	^ self links select: [ :link | link group = group ]
+]
+
+{ #category : #'as yet unclassified' }
+MetadataStore >> groupPublishes: group [
+	^ self publishes select: [ :publish | publish group = group ]
 ]
 
 { #category : #accessing }
