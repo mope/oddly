@@ -27,11 +27,12 @@ MetadataList >> chatList [
 
 { #category : #initialization }
 MetadataList >> connectPresenters [
-	groupList whenSelectionModeChangedDo: [ :selection |
+	groupList whenSelectionChangedDo: [ :selection |
 		selection selectedItem ifNotNil: [ 
 			chatList items: selection selectedItem chats values.
 		].
-	]
+	].
+
 ]
 
 { #category : #accessing }

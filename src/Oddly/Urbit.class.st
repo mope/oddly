@@ -7,7 +7,6 @@ Class {
 		'url',
 		'password',
 		'ship',
-		'sseclient',
 		'closed',
 		'actionId'
 	],
@@ -40,23 +39,21 @@ Urbit >> actionId [
 	^ actionId
 ]
 
-{ #category : #accessing }
-Urbit >> client: c [
-	client := c
+{ #category : #'as yet unclassified' }
+Urbit >> baseHash [
+	^ self scry: 'file-server' path: 'clay/base/hash' mark: 'json' 
 ]
 
 { #category : #'initialize-release' }
 Urbit >> close [
 	closed := true.
 	self deleteChannel.
-	sseclient close.
 	client close
 ]
 
 { #category : #ssl }
 Urbit >> connect [
-	uuid := UUID new asString.
-	self logIn.
+	client := self getAuthenticatedClient.
 	self
 		poke: ship
 		app: 'graph-store'
@@ -67,7 +64,6 @@ Urbit >> connect [
 		app: 'metadata-store'
 		path: '/all'
 		action: 'subscribe'.
-	self openChannel
 ]
 
 { #category : #'as yet unclassified' }
@@ -89,30 +85,27 @@ Urbit >> deleteChannel [
 		put.
 ]
 
+{ #category : #'as yet unclassified' }
+Urbit >> getAuthenticatedClient [
+	| newClient |
+	newClient := ZnClient new.
+	newClient logToTranscript;
+		url: url, 'login';
+		formAt: 'password' put: password;
+		post.
+		
+	^ newClient.
+]
+
 { #category : #initialization }
 Urbit >> initialize [
-	super initialize.
-	url := 'http://localhost:8080/~/'.
-	password := 'lidlut-tabwed-pillex-ridrup'.
-	ship := 'zod'.
 	closed := false.
 	actionId := 0.
 ]
 
-{ #category : #'as yet unclassified' }
-Urbit >> logIn [
-	client logToTranscript;
-	url: url, 'login';
-	formAt: 'password' put: password;
-	post.
-]
-
-{ #category : #'as yet unclassified' }
-Urbit >> openChannel [
-	sseclient url: url, 'channel/', uuid; connect.
-	self read.
-
-
+{ #category : #accessing }
+Urbit >> password: p [
+	password := p
 ]
 
 { #category : #'as yet unclassified' }
@@ -137,21 +130,27 @@ Urbit >> poke: ship_ app: app path: path action: action [
 		put.
 ]
 
-{ #category : #'meta-object-protocol' }
-Urbit >> read [
-   " FIXME seem to be getting 403 missing on ack "
-	sseclient read.
-	"self ack: message id."
-	" This doesn't seem to be working "
-	" Compare to implementations here: "
-	" https://github.com/urbit/urbit/blob/6ed5ccbc4ee833a823163bea1a9db1ae2944f0a3/pkg/arvo/app/landscape/js/channel.js "
-	" https://github.com/clonex10100/urbit-api.el/blob/master/urbit-http.el "
-	" Am I missing some of the message numbers? Maybe I need to accumulate then send them "
-	" ui appendText: (STONJSON fromString: message data) asString. "
-	
+{ #category : #'as yet unclassified' }
+Urbit >> scry: app path: path mark: mark [
+
+	^ client logToTranscript;
+		url: url, 'scry/', app, '/', path, '.', mark;
+		get;
+		response.
+
 ]
 
 { #category : #accessing }
-Urbit >> sseclient: s [
-	sseclient := s
+Urbit >> ship: s [
+	ship := s
+]
+
+{ #category : #accessing }
+Urbit >> url: u [
+	url := u
+]
+
+{ #category : #accessing }
+Urbit >> uuid: u [
+	uuid := u
 ]

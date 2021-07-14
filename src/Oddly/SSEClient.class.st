@@ -83,6 +83,7 @@ SSEClient >> read [
 	| delimiterPosition raw messages |
 	
 	" FIXME this crashes if you close it before it's accumulated anything. "
+	" it crashes if it gets into the if branch when there are no messages "
 	process := [ [ true ] whileTrue: [
 		self accumulateChunks.
 		" The server could return combinations of lfs and crs, so this is not quite correct "
@@ -91,10 +92,12 @@ SSEClient >> read [
 			raw := buffer splitOn: String lf, String lf.
 			buffer := raw last.
 			raw := raw select: [ :line | line isNotEmpty ].
-			messages := raw allButLast collect: [ :line | SSEEvent parse: line ].
-			messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
-			messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
-			messages do: [ :message | messageHandler add: message ].
+			raw ifNotEmpty: [ 
+				messages := raw allButLast collect: [ :line | SSEEvent parse: line ].
+				messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
+				messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
+				messages do: [ :message | messageHandler add: message ].
+			]
 		].
 	] ] forkAt: Processor userBackgroundPriority.
 ]
