@@ -82,8 +82,6 @@ SSEClient >> messageHandler: m [
 SSEClient >> read [
 	| delimiterPosition raw messages |
 	
-	" FIXME this crashes if you close it before it's accumulated anything. "
-	" it crashes if it gets into the if branch when there are no messages "
 	process := [ [ true ] whileTrue: [
 		self accumulateChunks.
 		" The server could return combinations of lfs and crs, so this is not quite correct "

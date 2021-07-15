@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'groupList',
 		'chatList',
-		'metadataStore'
+		'metadataStore',
+		'oddly'
 	],
 	#category : #Oddly
 }
@@ -27,12 +28,18 @@ MetadataList >> chatList [
 
 { #category : #initialization }
 MetadataList >> connectPresenters [
+
 	groupList whenSelectionChangedDo: [ :selection |
 		selection selectedItem ifNotNil: [ 
 			chatList items: selection selectedItem chats values.
 		].
 	].
-
+	chatList whenSelectionChangedDo: [ :selection |
+		selection selectedItem ifNotNil: [
+			" FIXME add a Backlog class? "
+			OddlyView new setText: (oddly backlog: selection selectedItem shortResource) contents; openWithSpec.
+		].
+	].
 ]
 
 { #category : #accessing }
@@ -50,6 +57,11 @@ MetadataList >> initializePresenters [
 { #category : #accessing }
 MetadataList >> metadataStore: m [
 	metadataStore := m
+]
+
+{ #category : #accessing }
+MetadataList >> oddly: o [
+	oddly := o
 ]
 
 { #category : #subscription }

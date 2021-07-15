@@ -40,8 +40,14 @@ Urbit >> actionId [
 ]
 
 { #category : #'as yet unclassified' }
+Urbit >> backlog: resource [
+	
+	^ self scry: 'graph-store/newest' path: resource, '/', '100' mark: 'json'
+]
+
+{ #category : #'as yet unclassified' }
 Urbit >> baseHash [
-	^ self scry: 'file-server' path: 'clay/base/hash' mark: 'json' 
+	^ self scry: 'file-server' path: '/clay/base/hash' mark: 'json' 
 ]
 
 { #category : #'initialize-release' }
@@ -134,7 +140,7 @@ Urbit >> poke: ship_ app: app path: path action: action [
 Urbit >> scry: app path: path mark: mark [
 
 	^ client logToTranscript;
-		url: url, 'scry/', app, '/', path, '.', mark;
+		url: url, 'scry/', app, path, '.', mark;
 		get;
 		response.
 

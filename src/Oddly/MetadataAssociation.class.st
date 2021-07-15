@@ -77,6 +77,12 @@ MetadataAssociation >> resource: anObject [
 	resource := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+MetadataAssociation >> shortResource [
+	" strip /ship from resource "
+	^ resource allButFirst: 5
+]
+
 { #category : #accessing }
 MetadataAssociation >> store [
 

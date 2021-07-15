@@ -14,6 +14,11 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+Oddly >> backlog: resource [
+	^ urbit backlog: resource
+]
+
+{ #category : #'as yet unclassified' }
 Oddly >> baseHash [
 	^ urbit baseHash
 ]
@@ -35,6 +40,7 @@ Oddly >> initialize [
 	metadataList := MetadataList new
 		metadataStore: metadataStore;
 		subscribeTo: metadataStore announcer;
+		oddly: self;
 		openWithSpec.
 	ui := OddlyView new
 		graphStore: graphStore;
