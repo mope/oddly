@@ -1,6 +1,6 @@
 Class {
 	#name : #Oddly,
-	#superclass : #Object,
+	#superclass : #SpApplication,
 	#instVars : [
 		'ui',
 		'urbit',
@@ -37,10 +37,7 @@ Oddly >> initialize [
 		storeContainer: storeContainer;
 		subscribeTo: metadataStore announcer;
 		oddly: self;
-		openWithSpec.
-	ui := OddlyView new
-		graphStore: graphStore;
-		subscribeTo: graphStore announcer;
+		title: 'Groups';
 		openWithSpec.
 		
 	url := 'http://localhost:8080/~/'.
@@ -63,11 +60,12 @@ Oddly >> initialize [
 ]
 
 { #category : #'instance creation' }
-Oddly >> newChatWindow: resource [
+Oddly >> newChatWindow: chat [
 	ChatWindow new storeContainer: storeContainer;
-		resource: resource;
+		resource: chat shortResource;
 		subscribeTo: graphStore announcer;
+		title: chat title;
 		openWithSpec.
 	" FIXME there must be a better way of storing the resource "
-	storeContainer add: (urbit backlog: ('/~', resource)) contents.
+	storeContainer add: (urbit backlog: ('/~', chat shortResource)) contents.
 ]

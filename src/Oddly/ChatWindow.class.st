@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'storeContainer',
 		'messageList',
-		'resource'
+		'resource',
+		'title'
 	],
 	#category : #Oddly
 }
@@ -22,6 +23,14 @@ ChatWindow >> initializePresenters [
 	messageList := self newList.
 ]
 
+{ #category : #initialization }
+ChatWindow >> initializeWindow: aWindowPresenter [
+
+	aWindowPresenter 
+		title: title;
+		initialExtent: 500@500
+]
+
 { #category : #accessing }
 ChatWindow >> resource: r [
 	resource := r
@@ -34,9 +43,20 @@ ChatWindow >> storeContainer: s [
 
 { #category : #subscription }
 ChatWindow >> subscribeTo: anAnnouncer [
-    
-anAnnouncer when: GraphUpdate
-	do: [
-		messageList items: (((storeContainer graphStore) nodes: resource) values).
- 	]
+	| graphNodes posts | 
+	anAnnouncer when: GraphUpdate
+		do: [
+			graphNodes := ((storeContainer graphStore) nodes: resource) values sorted: [
+				:a :b | ((a at: 'post') at: 'time-sent') > ((b at: 'post') at: 'time-sent')	
+			].
+			posts := graphNodes collect: [ :node |
+				 ((node at: 'post') at: 'author'), ': ', ((((node at: 'post') at: 'contents') at: 1) at: 'text')
+			].
+			messageList items: posts.
+ 		]
+]
+
+{ #category : #accessing }
+ChatWindow >> title: t [
+	title := t
 ]

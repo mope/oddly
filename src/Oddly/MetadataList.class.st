@@ -5,7 +5,8 @@ Class {
 		'groupList',
 		'chatList',
 		'storeContainer',
-		'oddly'
+		'oddly',
+		'title'
 	],
 	#category : #Oddly
 }
@@ -37,7 +38,7 @@ MetadataList >> connectPresenters [
 	chatList whenSelectionChangedDo: [ :selection |
 		selection selectedItem ifNotNil: [
 			" FIXME shortResource should be somewhere else "
-			oddly newChatWindow: selection selectedItem shortResource
+			oddly newChatWindow: selection selectedItem
 		].
 	].
 ]
@@ -52,6 +53,14 @@ MetadataList >> initializePresenters [
 	groupList := self newList.
 	chatList := self newList.
 	
+]
+
+{ #category : #initialization }
+MetadataList >> initializeWindow: aWindowPresenter [
+
+	aWindowPresenter 
+		title: title;
+		initialExtent: 500@500
 ]
 
 { #category : #accessing }
@@ -71,4 +80,9 @@ anAnnouncer when: MetadataUpdate
 	do: [
 		groupList items: (storeContainer metadataStore groups values).
  	]
+]
+
+{ #category : #accessing }
+MetadataList >> title: t [
+	title := t
 ]
