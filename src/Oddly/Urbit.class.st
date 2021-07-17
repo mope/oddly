@@ -15,17 +15,20 @@ Class {
 
 { #category : #'as yet unclassified' }
 Urbit >> ack: eventId [
-	| ackClient message messageArray |
+	| message messageArray |
 	
-	ackClient := ZnClient new.
 	message := Dictionary new
 		at: 'id' put: (self actionId);
 		at: 'action' put: 'ack';
-		at: 'event-id' put: eventId asNumber.
+		at: 'event-id' put: eventId asNumber;
+		yourself.
 	messageArray := Array new: 1.
 	messageArray at: 1 put: message.
-		
-	ackClient logToTranscript;
+
+	Transcript show: String cr.
+	Transcript show: message.
+	
+	client logToTranscript;
 		url: url, 'channel/', uuid;
 		entity: (ZnEntity
 			with: (STONJSON toString: messageArray)

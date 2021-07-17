@@ -94,7 +94,7 @@ SSEClient >> read [
 				messages := raw collect: [ :line | SSEEvent parse: line ].
 				messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
 				messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
-				messages do: [ :message | messageHandler add: message data ].
+				messages do: [ :message | messageHandler add: message ].
 			]
 		].
 	] ] forkAt: Processor userBackgroundPriority.

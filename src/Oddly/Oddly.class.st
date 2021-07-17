@@ -8,7 +8,8 @@ Class {
 		'storeContainer',
 		'metadataStore',
 		'graphStore',
-		'metadataList'
+		'metadataList',
+		'messageHandler'
 	],
 	#category : #Oddly
 }
@@ -52,9 +53,10 @@ Oddly >> initialize [
 		ship: ship;
 		uuid: uuid;
 		connect.
+	messageHandler := MessageHandler new urbit: urbit; storeContainer: storeContainer.
 	sseclient := SSEClient new
 		client: urbit getAuthenticatedClient;
-		messageHandler: storeContainer.
+		messageHandler: messageHandler.
 	sseclient url: url, 'channel/', uuid; connect.
 	sseclient read.
 
