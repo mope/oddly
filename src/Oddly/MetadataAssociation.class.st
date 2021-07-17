@@ -79,8 +79,8 @@ MetadataAssociation >> resource: anObject [
 
 { #category : #'as yet unclassified' }
 MetadataAssociation >> shortResource [
-	" strip /ship from resource "
-	^ resource allButFirst: 5
+	" strip /ship/~ from resource "
+	^ resource allButFirst: 7
 ]
 
 { #category : #accessing }

@@ -30,7 +30,7 @@ MetadataStore >> add: message [
 			].
 		].
 	].
-	announcer announce: announcementClass new.
+	announcer announce: MetadataUpdate new.
 ]
 
 { #category : #accessing }
@@ -73,8 +73,7 @@ MetadataStore >> groups: anObject [
 
 { #category : #initialization }
 MetadataStore >> initialize [
-   super initialize.
-	announcementClass := MetadataUpdate.
+	super initialize.
 	groups := Dictionary new.
 	chats := Dictionary new.
 	publishes := Dictionary new.

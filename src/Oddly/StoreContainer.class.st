@@ -1,5 +1,5 @@
 Class {
-	#name : #MessageHandler,
+	#name : #StoreContainer,
 	#superclass : #Object,
 	#instVars : [
 		'graphStore',
@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : #accessing }
-MessageHandler >> add: raw [
+StoreContainer >> add: raw [
 	| message body |
 	
 	message := STONJSON fromString: raw data.
@@ -26,11 +26,23 @@ MessageHandler >> add: raw [
 ]
 
 { #category : #accessing }
-MessageHandler >> graphStore: g [
+StoreContainer >> graphStore [
+	
+	^ graphStore
+]
+
+{ #category : #accessing }
+StoreContainer >> graphStore: g [
 	graphStore := g
 ]
 
 { #category : #accessing }
-MessageHandler >> metadataStore: m [
+StoreContainer >> metadataStore [
+	
+	^ metadataStore
+]
+
+{ #category : #accessing }
+StoreContainer >> metadataStore: m [
 	metadataStore := m
 ]

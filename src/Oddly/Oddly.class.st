@@ -5,7 +5,7 @@ Class {
 		'ui',
 		'urbit',
 		'sseclient',
-		'messageHandler',
+		'storeContainer',
 		'metadataStore',
 		'graphStore',
 		'metadataList'
@@ -15,7 +15,7 @@ Class {
 
 { #category : #'as yet unclassified' }
 Oddly >> backlog: resource [
-	^ urbit backlog: resource
+	storeContainer add: (urbit backlog: resource)
 ]
 
 { #category : #'as yet unclassified' }
@@ -34,11 +34,11 @@ Oddly >> initialize [
 	| url password ship uuid |
 	metadataStore := MetadataStore new.
 	graphStore := GraphStore new.
-	messageHandler := MessageHandler new
+	storeContainer := StoreContainer new
 		metadataStore: metadataStore;
 		graphStore: graphStore.
 	metadataList := MetadataList new
-		metadataStore: metadataStore;
+		storeContainer: storeContainer;
 		subscribeTo: metadataStore announcer;
 		oddly: self;
 		openWithSpec.
@@ -59,8 +59,16 @@ Oddly >> initialize [
 		connect.
 	sseclient := SSEClient new
 		client: urbit getAuthenticatedClient;
-		messageHandler: messageHandler.
+		messageHandler: storeContainer.
 	sseclient url: url, 'channel/', uuid; connect.
 	sseclient read.
 
+]
+
+{ #category : #'instance creation' }
+Oddly >> newChatWindow: resource [
+	ChatWindow new storeContainer: storeContainer;
+		resource: resource;
+		subscribeTo: graphStore announcer;
+		openWithSpec.
 ]
