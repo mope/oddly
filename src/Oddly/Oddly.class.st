@@ -14,11 +14,6 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-Oddly >> backlog: resource [
-	storeContainer add: (urbit backlog: resource)
-]
-
-{ #category : #'as yet unclassified' }
 Oddly >> baseHash [
 	^ urbit baseHash
 ]
@@ -71,4 +66,6 @@ Oddly >> newChatWindow: resource [
 		resource: resource;
 		subscribeTo: graphStore announcer;
 		openWithSpec.
+	" FIXME there must be a better way of storing the resource "
+	storeContainer add: (urbit backlog: ('/~', resource)) contents.
 ]

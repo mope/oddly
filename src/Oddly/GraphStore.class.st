@@ -11,13 +11,13 @@ Class {
 GraphStore >> add: message [
 	| name ship nodes resource |
 	
-	name := ((((message at: 'json') at: 'graph-update') at: 'add-nodes') at: 'resource') at: 'name'.
-	ship := ((((message at: 'json') at: 'graph-update') at: 'add-nodes') at: 'resource') at: 'ship'.
+	name := (((message at: 'graph-update') at: 'add-nodes') at: 'resource') at: 'name'.
+	ship := (((message at: 'graph-update') at: 'add-nodes') at: 'resource') at: 'ship'.
 	resource := ship, '/', name.
 	(graph includesKey: resource) ifFalse: [ 
 		graph at: resource put: Dictionary new.
 	].
-	nodes := (((message at: 'json') at: 'graph-update') at: 'add-nodes') at: 'nodes'.
+	nodes := ((message at: 'graph-update') at: 'add-nodes') at: 'nodes'.
 	nodes keysAndValuesDo: [ :k :v | graph at: resource at: k put: v ]. 
 	announcer announce: GraphUpdate new.
 ]

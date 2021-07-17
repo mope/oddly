@@ -10,17 +10,17 @@ Class {
 
 { #category : #accessing }
 StoreContainer >> add: raw [
-	| message body |
+	| message |
 	
-	message := STONJSON fromString: raw data.
+	message := STONJSON fromString: raw.
 	(message includesKey: 'json') ifTrue: [
-		body := message at: 'json'.
-		(body includesKey: 'graph-update') ifTrue: [
-			graphStore add: message.	
-		].
-		(body includesKey: 'metadata-update') ifTrue: [
-			metadataStore add: message.	
-		]	
+		message := message at: 'json'.
+	].
+	(message includesKey: 'graph-update') ifTrue: [
+		graphStore add: message.	
+	].
+	(message includesKey: 'metadata-update') ifTrue: [
+		metadataStore add: message.	
 	]
 
 ]

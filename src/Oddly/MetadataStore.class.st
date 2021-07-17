@@ -14,7 +14,7 @@ Class {
 MetadataStore >> add: message [
 	| items groupsDictionary |
 	
-	items := ((message at: 'json') at: 'metadata-update') at: 'associations'.
+	items := (message at: 'metadata-update') at: 'associations'.
 	groupsDictionary := items associationsSelect: [ :association | (association value at: 'app-name') = 'groups' ].
 	groups := groupsDictionary collect: [ :value | Group with: value store: self ].
 	items associationsDo: [ :association | 
