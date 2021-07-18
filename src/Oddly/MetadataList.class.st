@@ -35,7 +35,7 @@ MetadataList >> connectPresenters [
 			chatList items: selection selectedItem chats values.
 		].
 	].
-	chatList whenSelectionChangedDo: [ :selection |
+	chatList whenActivatedDo: [ :selection |
 		selection selectedItem ifNotNil: [
 			" FIXME shortResource should be somewhere else "
 			oddly newChatWindow: selection selectedItem
@@ -51,7 +51,7 @@ MetadataList >> groupList [
 { #category : #initialization }
 MetadataList >> initializePresenters [
 	groupList := self newList.
-	chatList := self newList.
+	chatList := self newList activateOnDoubleClick.
 	
 ]
 

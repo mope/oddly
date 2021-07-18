@@ -47,12 +47,13 @@ ChatWindow >> subscribeTo: anAnnouncer [
 	anAnnouncer when: GraphUpdate
 		do: [
 			graphNodes := ((storeContainer graphStore) nodes: resource) values sorted: [
-				:a :b | ((a at: 'post') at: 'time-sent') > ((b at: 'post') at: 'time-sent')	
+				:a :b | ((a at: 'post') at: 'time-sent') < ((b at: 'post') at: 'time-sent')	
 			].
 			posts := graphNodes collect: [ :node |
 				 ((node at: 'post') at: 'author'), ': ', ((((node at: 'post') at: 'contents') at: 1) at: 'text')
 			].
 			messageList items: posts.
+			messageList selectIndex: (posts size) scrollToSelection: true. 
  		]
 ]
 
