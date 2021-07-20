@@ -63,16 +63,7 @@ Urbit >> close [
 { #category : #ssl }
 Urbit >> connect [
 	client := self getAuthenticatedClient.
-	self
-		poke: ship
-		app: 'graph-store'
-		path: '/updates'
-		action: 'subscribe'.
-	self
-		poke: ship
-		app: 'metadata-store'
-		path: '/all'
-		action: 'subscribe'.
+
 ]
 
 { #category : #'as yet unclassified' }
@@ -118,7 +109,17 @@ Urbit >> password: p [
 ]
 
 { #category : #'as yet unclassified' }
-Urbit >> poke: ship_ app: app path: path action: action [
+Urbit >> scry: app path: path mark: mark [
+
+	^ client logToTranscript;
+		url: url, 'scry/', app, path, '.', mark;
+		get;
+		response.
+
+]
+
+{ #category : #'as yet unclassified' }
+Urbit >> send: ship_ app: app path: path action: action [
 	| message messageArray |
 	
 	message := Dictionary new
@@ -137,16 +138,6 @@ Urbit >> poke: ship_ app: app path: path action: action [
 			with: (STONJSON toString: messageArray)
 			type: ZnMimeType applicationJson);
 		put.
-]
-
-{ #category : #'as yet unclassified' }
-Urbit >> scry: app path: path mark: mark [
-
-	^ client logToTranscript;
-		url: url, 'scry/', app, path, '.', mark;
-		get;
-		response.
-
 ]
 
 { #category : #accessing }

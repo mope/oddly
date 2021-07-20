@@ -82,22 +82,36 @@ SSEClient >> messageHandler: m [
 SSEClient >> read [
 	| delimiterPosition raw messages |
 	
+	self accumulateChunks.
+	" The server could return combinations of lfs and crs, so this is not quite correct "
+	delimiterPosition := buffer findString: String lf, String lf.
+	(delimiterPosition = 0) ifTrue: [
+		^ #().
+	].
+	raw := buffer splitOn: String lf, String lf.
+	buffer := raw last.
+	raw := raw allButLast select: [ :line | line isNotEmpty ].
+	raw ifNotEmpty: [
+		Transcript show: String cr, 'Buffer', String cr.
+		Transcript show: buffer.
+		messages := raw collect: [ :line | SSEEvent parse: line ].
+		messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
+		messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
+		^ messages.
+	].
+]
+
+{ #category : #'as yet unclassified' }
+SSEClient >> readForever [
+	| messages |
+	
 	process := [ [ true ] whileTrue: [
-		self accumulateChunks.
-		" The server could return combinations of lfs and crs, so this is not quite correct "
-		delimiterPosition := buffer findString: String lf, String lf.
-		(delimiterPosition ~= 0) ifTrue: [
-			raw := buffer splitOn: String lf, String lf.
-			buffer := raw last.
-			raw := raw allButLast select: [ :line | line isNotEmpty ].
-			raw ifNotEmpty: [ 
-				messages := raw collect: [ :line | SSEEvent parse: line ].
-				messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
-				messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
-				messages do: [ :message | messageHandler add: message ].
-			]
-		].
+		messages := self read.
+		messages ifNotEmpty: [ 
+			messages do: [ :message | messageHandler add: message ].
+		] 
 	] ] forkAt: Processor userBackgroundPriority.
+				
 ]
 
 { #category : #accessing }

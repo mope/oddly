@@ -50,13 +50,33 @@ Oddly >> initialize [
 		ship: ship;
 		uuid: uuid;
 		connect.
+	urbit
+		send: ship
+		app: 'metadata-store'
+		path: '/all'
+		action: 'subscribe'.
+	urbit
+		send: ship
+		app: 'invite-store'
+		path: '/all'
+		action: 'subscribe'.
+	urbit
+		send: ship
+		app: 'graph-store'
+		path: '/updates'
+		action: 'subscribe'.
+	urbit
+		send: ship
+		app: 'group-store'
+		path: '/groups'
+		action: 'subscribe'.
 	messageHandler := MessageHandler new urbit: urbit; storeContainer: storeContainer.
 	sseclient := SSEClient new
 		client: urbit getAuthenticatedClient;
 		messageHandler: messageHandler.
 	sseclient url: url, 'channel/', uuid; connect.
-	sseclient read.
-
+	sseclient readForever.
+	
 ]
 
 { #category : #'instance creation' }
