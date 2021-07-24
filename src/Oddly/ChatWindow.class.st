@@ -4,16 +4,21 @@ Class {
 	#instVars : [
 		'storeContainer',
 		'messageList',
+		'messageInput',
 		'resource',
-		'title'
+		'title',
+		'urbit',
+		'ship'
 	],
 	#category : #Oddly
 }
 
 { #category : #specs }
 ChatWindow class >> defaultSpec [
-	^ SpBoxLayout newLeftToRight
+	^ SpBoxLayout newVertical
 		add: #messageList;
+			yourself;
+		add: #messageInput height: 10;
 			yourself;
 		yourself.
 ]
@@ -21,6 +26,33 @@ ChatWindow class >> defaultSpec [
 { #category : #initialization }
 ChatWindow >> initializePresenters [
 	messageList := self newList.
+	messageInput := self newTextInput whenSubmitDo: [ :textMorph | | contents post node nodes addNodes  message array |
+		contents := Dictionary new
+							at: 'text' put: textMorph text asString;
+							yourself.
+		array := Array new: 1.
+		array at: 1 put: contents.
+		post := GraphStorePost with: array author: ship.
+		node := Dictionary new
+					at: 'children' put: nil;
+					at: 'post' put: post asDictionary;
+					yourself.
+		nodes := Dictionary new
+						at: '/', post index asString put: node;
+						yourself.
+		addNodes := Dictionary new
+							at: 'nodes' put: nodes;
+							at: 'resource' put: (Dictionary new at: 'ship' put: '~zod'; at: 'name' put: 'bazquux-754'; yourself);
+							yourself.
+		message := Dictionary new
+						at: 'add-nodes' put: addNodes;
+						yourself.
+		urbit spider: message
+			threadName: 'graph-add-nodes'
+			inputMark: 'graph-update-2'
+			outputMark: 'graph-view-action'.
+		storeContainer graphStore addOne: post resource: 'zod/bazquux-754' index: '/', post index.
+	].
 ]
 
 { #category : #initialization }
@@ -37,6 +69,18 @@ ChatWindow >> resource: r [
 ]
 
 { #category : #accessing }
+ChatWindow >> ship [
+
+	^ ship
+]
+
+{ #category : #accessing }
+ChatWindow >> ship: s [
+
+	ship := s
+]
+
+{ #category : #accessing }
 ChatWindow >> storeContainer: s [
 	storeContainer := s
 ]
@@ -47,17 +91,23 @@ ChatWindow >> subscribeTo: anAnnouncer [
 	anAnnouncer when: GraphUpdate
 		do: [
 			graphNodes := ((storeContainer graphStore) nodes: resource) values sorted: [
-				:a :b | ((a at: 'post') at: 'time-sent') < ((b at: 'post') at: 'time-sent')	
+				:a :b | (a at: 'post') timeSent < (b at: 'post') timeSent	
 			].
 			posts := graphNodes collect: [ :node |
-				 ((node at: 'post') at: 'author'), ': ', ((((node at: 'post') at: 'contents') at: 1) at: 'text')
+				 (node at: 'post') author, ': ', ((((node at: 'post') contents) at: 1) at: 'text')
 			].
 			messageList items: posts.
-			messageList selectIndex: (posts size) scrollToSelection: true. 
+			messageList selectIndex: (posts size) scrollToSelection: true.
  		]
 ]
 
 { #category : #accessing }
 ChatWindow >> title: t [
 	title := t
+]
+
+{ #category : #accessing }
+ChatWindow >> urbit: u [
+
+	urbit := u
 ]

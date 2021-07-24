@@ -9,7 +9,8 @@ Class {
 		'metadataStore',
 		'graphStore',
 		'metadataList',
-		'messageHandler'
+		'messageHandler',
+		'ship'
 	],
 	#category : #Oddly
 }
@@ -27,7 +28,12 @@ Oddly >> close [
 
 { #category : #initialization }
 Oddly >> initialize [
-	| url password ship uuid |
+	| url password uuid |
+	
+	url := 'http://localhost:8080/'.
+	password := 'lidlut-tabwed-pillex-ridrup'.
+	ship := 'zod'.
+	uuid := UUID new asString.
 	metadataStore := MetadataStore new.
 	graphStore := GraphStore new.
 	storeContainer := StoreContainer new
@@ -40,10 +46,6 @@ Oddly >> initialize [
 		title: 'Groups';
 		openWithSpec.
 		
-	url := 'http://localhost:8080/~/'.
-	password := 'lidlut-tabwed-pillex-ridrup'.
-	ship := 'zod'.
-	uuid := UUID new asString.
 	urbit := Urbit new
 		url: url;
 		password: password;
@@ -74,7 +76,7 @@ Oddly >> initialize [
 	sseclient := SSEClient new
 		client: urbit getAuthenticatedClient;
 		messageHandler: messageHandler.
-	sseclient url: url, 'channel/', uuid; connect.
+	sseclient url: url, '~/channel/', uuid; connect.
 	sseclient readForever.
 	
 ]
@@ -85,7 +87,9 @@ Oddly >> newChatWindow: chat [
 		resource: chat shortResource;
 		subscribeTo: graphStore announcer;
 		title: chat title;
+		urbit: urbit;
+		ship: ship;
 		openWithSpec.
 	" FIXME there must be a better way of storing the resource "
-	storeContainer add: (urbit backlog: ('/~', chat shortResource)) contents.
+	storeContainer add: (STONJSON fromString: (urbit backlog: ('/~', chat shortResource)) contents).
 ]

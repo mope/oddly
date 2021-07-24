@@ -29,7 +29,7 @@ Urbit >> ack: eventId [
 	Transcript show: message.
 	
 	client logToTranscript;
-		url: url, 'channel/', uuid;
+		url: url, '~/channel/', uuid;
 		entity: (ZnEntity
 			with: (STONJSON toString: messageArray)
 			type: ZnMimeType applicationJson);
@@ -78,7 +78,7 @@ Urbit >> deleteChannel [
 	messageArray at: 1 put: message.
 
 	client logToTranscript;
-		url: url, 'channel/', uuid;
+		url: url, '~/channel/', uuid;
 		entity: (ZnEntity
 			with: (STONJSON toString: messageArray)
 			type: ZnMimeType applicationJson);
@@ -90,7 +90,7 @@ Urbit >> getAuthenticatedClient [
 	| newClient |
 	newClient := ZnClient new.
 	newClient logToTranscript;
-		url: url, 'login';
+		url: url, '~/login';
 		formAt: 'password' put: password;
 		post.
 		
@@ -112,7 +112,7 @@ Urbit >> password: p [
 Urbit >> scry: app path: path mark: mark [
 
 	^ client logToTranscript;
-		url: url, 'scry/', app, path, '.', mark;
+		url: url, '~/scry/', app, path, '.', mark;
 		get;
 		response.
 
@@ -133,7 +133,7 @@ Urbit >> send: ship_ app: app path: path action: action [
 	messageArray at: 1 put: message.
 
 	client logToTranscript;
-		url: url, 'channel/', uuid;
+		url: url, '~/channel/', uuid;
 		entity: (ZnEntity
 			with: (STONJSON toString: messageArray)
 			type: ZnMimeType applicationJson);
@@ -143,6 +143,17 @@ Urbit >> send: ship_ app: app path: path action: action [
 { #category : #accessing }
 Urbit >> ship: s [
 	ship := s
+]
+
+{ #category : #'as yet unclassified' }
+Urbit >> spider: entity threadName: thread inputMark: input outputMark: output [
+
+	^ client logToTranscript;
+		url: url, 'spider/', input, '/', thread, '/', output, '.json';
+		entity: (ZnEntity
+			with: (STONJSON toString: entity)
+			type: ZnMimeType applicationJson);
+		post.
 ]
 
 { #category : #accessing }

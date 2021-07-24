@@ -11,7 +11,7 @@ Class {
 { #category : #adding }
 MessageHandler >> add: message [
 	urbit ack: message id.
-	storeContainer add: message data.
+	storeContainer add: (STONJSON fromString: message data).
 ]
 
 { #category : #accessing }

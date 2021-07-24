@@ -12,17 +12,54 @@ Class {
 	#category : #Oddly
 }
 
+{ #category : #'as yet unclassified' }
+GraphStorePost class >> unixToDa: number [
+	| daUnixEpoch daSecond |
+	
+	daUnixEpoch := 170141184475152167957503069145530368000.
+	daSecond := 18446744073709551616.
+	^ (daUnixEpoch + ((number * daSecond) / 1000)) asInteger.
+]
+
 { #category : #'instance creation' }
 GraphStorePost class >> with: dictionary [
 	| instance |
 	
 	instance := self new.
+	
+	instance author: (dictionary at: 'author').
 	instance index: (dictionary at: 'index').
 	instance contents: (dictionary at: 'contents').
 	instance hash: (dictionary at: 'hash').
 	instance signatures: (dictionary at: 'signatures').
-	instance timeSent: (dictionary at: 'timeSent').
+	instance timeSent: (dictionary at: 'time-sent').
 	^ instance
+]
+
+{ #category : #'instance creation' }
+GraphStorePost class >> with: contents author: author [
+	| instance |
+	
+	instance := self new.
+	instance author: author.
+	instance index: (self unixToDa: DateAndTime now asUnixTime).
+	instance contents: contents.
+	instance signatures: #().
+	instance timeSent: DateAndTime now asUnixTime.
+	^ instance
+]
+
+{ #category : #converting }
+GraphStorePost >> asDictionary [
+	
+	^ Dictionary new
+		at: 'author' put: '~', author;
+		at: 'contents' put: contents;
+		at: 'hash' put: hash;
+		at: 'index' put: '/', index asString;
+		at: 'signatures' put: signatures;
+		at: 'time-sent' put: timeSent;
+		yourself.
 ]
 
 { #category : #accessing }
@@ -71,6 +108,23 @@ GraphStorePost >> index [
 GraphStorePost >> index: anObject [
 
 	index := anObject
+]
+
+{ #category : #printing }
+GraphStorePost >> printOn: aStream [
+
+	author isNotNil ifTrue: [ 
+		aStream
+			nextPutAll: author.
+	].
+	index isNotNil ifTrue: [ 
+		aStream
+			nextPutAll: index asString.
+	].
+	timeSent isNotNil ifTrue: [ 
+		aStream
+			nextPutAll: timeSent asString.
+	].
 ]
 
 { #category : #accessing }

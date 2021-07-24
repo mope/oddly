@@ -11,8 +11,8 @@ Class {
 { #category : #accessing }
 StoreContainer >> add: raw [
 	| message |
+	message := raw.
 	
-	message := STONJSON fromString: raw.
 	(message includesKey: 'json') ifTrue: [
 		message := message at: 'json'.
 	].

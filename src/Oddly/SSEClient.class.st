@@ -57,8 +57,6 @@ SSEClient >> connect [
 		url: url;
 		streaming: true;
 		get.
-
-
 ]
 
 { #category : #initialization }
@@ -92,8 +90,6 @@ SSEClient >> read [
 	buffer := raw last.
 	raw := raw allButLast select: [ :line | line isNotEmpty ].
 	raw ifNotEmpty: [
-		Transcript show: String cr, 'Buffer', String cr.
-		Transcript show: buffer.
 		messages := raw collect: [ :line | SSEEvent parse: line ].
 		messages last retry isNotNil ifTrue: [ self retry: (messages last retry) ].
 		messages last id isNotNil ifTrue: [ self lastId: (messages last id) ].
